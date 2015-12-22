@@ -1,4 +1,9 @@
-CVGEN
+  ______     ______            
+ / ___\ \   / / ___| ___ _ __  
+| |    \ \ / / |  _ / _ \ '_ \ 
+| |___  \ V /| |_| |  __/ | | |
+ \____|  \_/  \____|\___|_| |_|
+                               
 
 CVGen is a project that builds targeted CVS from a provided YAML file.
 
