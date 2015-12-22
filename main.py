@@ -9,8 +9,65 @@ import os.path
 import jinja2
 import yaml
 
-def filter_db(db, tags):
-    return db
+class BadStructureException(Exception):
+    def __init__(self, value):
+        self.value = value
+
+    def __str__(self):
+        return repr(self.value)
+
+def filter_dictionary(entity, tags):
+    filtered = {}
+    for key, subentity in entity.items():
+        value = filter_db(subentity, tags)
+        if value is not None:
+            filtered[key] = value
+
+    return filtered
+
+def filter_db(entity, tags):
+    """
+    Performs two actions: dictionaries with a _default member have the correct tag
+    selected; and any object with a tags member is omitted if its tag set produces
+    an empty set on intersection with the main tag set.
+
+    If a multi-choice element has more than one choice, the first option is
+    chosen.
+    """
+    if type(entity) is dict:
+        if "_default" in entity:
+            # Find the correct tag, falling back to _default and write to filtered
+            selected = False
+            for tag, value in entity.items():
+                if tag in tags:
+                    return value
+        elif "_tags" in entity:
+            # Look for tags member and handle
+            if type(entity["_tags"]) is not list:
+                raise BadStructureException("_tags must be of type list.")
+
+            if "_all" in entity["_tags"] or len([x for x in tags if x in entity["_tags"]]) != 0:
+                return filter_dictionary(entity, tags)
+            else:
+                # else leave out entity
+                return None
+        else:
+            # else leave out entity
+            return None
+
+    elif type(entity) is list:
+        # Iterate over each entity and check tags
+        value = []
+        for item in entity:
+            filtered = filter_db(item, tags)
+            if filtered is not None:
+                value.append(filtered)
+        return value
+
+    else:
+        # Just add the entity
+        return entity
+
 
 def main(args):
     parser = argparse.ArgumentParser(description="Builds a CV using a YAML database.")
@@ -28,6 +85,7 @@ def main(args):
     db = None
     with open(args.source, "r") as source_file:
         db = yaml.load(source_file)
+        db["_tags"] = ["_all"]
 
     if tags is not None:
         db = filter_db(db, tags)
