@@ -56,15 +56,7 @@ docs/_build/
 
 # PyBuilder
 target/
-=======
-# Sources
-alt12dicts-*
->>>>>>> origin/master
 
 # Vim ignores
 *.swp
 *.swo
-<<<<<<< HEAD
-
-=======
->>>>>>> origin/master
